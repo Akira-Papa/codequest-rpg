@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>コードクエスト - CodeQuest</title>
+  <meta name="description" content="ドラクエ風2DピクセルRPGでJavaScriptを学ぶ。クイズに正解して敵を倒し、レベルアップしよう!" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0a0a18;
+      --frame: #1c1c3a;
+      --accent: #f7d51d;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      background-image:
+        radial-gradient(ellipse 80% 60% at 50% -10%, #17173a 0%, transparent 60%),
+        repeating-linear-gradient(0deg, transparent 0 2px, rgba(255,255,255,0.012) 2px 4px);
+      color: #e8e8f0;
+      font-family: "DotGothic16", monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      touch-action: manipulation;
+    }
+    header {
+      letter-spacing: 0.3em;
+      font-size: 12px;
+      color: var(--accent);
+      margin-bottom: 10px;
+      text-shadow: 0 0 12px rgba(247, 213, 29, 0.4);
+    }
+    .frame {
+      position: relative;
+      padding: 8px;
+      background: var(--frame);
+      border: 3px solid #3a3a6a;
+      border-radius: 6px;
+      box-shadow:
+        0 0 0 3px #0a0a18,
+        0 0 40px rgba(60, 60, 160, 0.35),
+        inset 0 0 20px rgba(0, 0, 0, 0.6);
+    }
+    canvas {
+      display: block;
+      width: min(92vw, 768px, 133vh);
+      aspect-ratio: 4 / 3;
+      image-rendering: pixelated;
+      background: #000;
+    }
+    /* CRT scanline overlay */
+    .frame::after {
+      content: "";
+      position: absolute;
+      inset: 8px;
+      pointer-events: none;
+      background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.14) 0 1px,
+        transparent 1px 3px
+      );
+      mix-blend-mode: multiply;
+    }
+    footer {
+      margin-top: 10px;
+      font-size: 10px;
+      color: #55557a;
+      text-align: center;
+      line-height: 1.8;
+    }
+    footer b { color: #8888b0; }
+  </style>
+</head>
+<body>
+  <header>▼ CODE QUEST ▼</header>
+  <div class="frame">
+    <canvas id="game" width="768" height="576"></canvas>
+  </div>
+  <footer>
+    <b>操作</b>: 矢印キー/WASD 移動  Enter/Space 決定  1〜4 回答  (タップ操作対応)
+  </footer>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
