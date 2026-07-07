@@ -92,8 +92,10 @@ const HINT_LEARN_GAIN = 0.1;
 const UNLOCKS: Record<string, string> = {
   nullghost: 'じょうけんぶんきの森',
   nesthydra: 'ループのどうくつ',
+  loopdragon: 'かんすうの塔',
+  recursion: 'はいれつの海',
 };
-const AREA_SEQ = ['area1', 'area2', 'area3'];
+const AREA_SEQ = ['area1', 'area2', 'area3', 'area4', 'area5'];
 const MAX_BATTLES = 400;
 
 interface AskLog {
@@ -293,11 +295,11 @@ function aggregate(name: string, params: LearnerParams, runs: number): void {
   if (params.useHints) {
     console.log(`  ヒント使用率 初見: ${pct(hintRateEarly)} → 3回目以降: ${pct(hintRateLate)}(卒業度)`);
   }
-  console.log(`  最終習得度(全36問平均) : ${pct(avg(results.map((r) => r.finalMastery)))}`);
-  const cats = results[0].masteryByCat;
+  console.log(`  最終習得度(全${QUESTIONS.length}問平均) : ${pct(avg(results.map((r) => r.finalMastery)))}`);
   const catAvg = (c: string) => pct(avg(results.map((r) => r.masteryByCat[c])));
-  console.log(`    分野別: へんすう ${catAvg('variable')} / じょうけん ${catAvg('condition')} / ループ ${catAvg('loop')}`);
-  void cats;
+  console.log(
+    `    分野別: へんすう ${catAvg('variable')} / じょうけん ${catAvg('condition')} / ループ ${catAvg('loop')} / かんすう ${catAvg('function')} / はいれつ ${catAvg('array')}`
+  );
 }
 
 const RUNS = 500;

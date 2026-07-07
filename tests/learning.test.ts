@@ -31,14 +31,20 @@ describe('ヒント(初心者の安全網)', () => {
 });
 
 describe('レッスン(まなびの石碑)', () => {
-  it('3分野すべてにレッスンがある', () => {
+  it('5分野すべてにレッスンがある', () => {
     const cats = new Set(LESSONS.map((l) => l.category));
-    expect(cats).toEqual(new Set(['variable', 'condition', 'loop']));
+    expect(cats).toEqual(new Set(['variable', 'condition', 'loop', 'function', 'array']));
   });
   it('各レッスンは4ページ以上で、空ページがない', () => {
     for (const l of LESSONS) {
       expect(l.pages.length, l.id).toBeGreaterThanOrEqual(4);
-      for (const p of l.pages) expect(p.trim().length).toBeGreaterThan(10);
+      for (const p of l.pages) expect(p.text.trim().length).toBeGreaterThan(10);
+    }
+  });
+  it('レッスンにアニメーションデモが2つ以上ある', () => {
+    for (const l of LESSONS) {
+      const demos = l.pages.filter((p) => p.demo).length;
+      expect(demos, l.id).toBeGreaterThanOrEqual(2);
     }
   });
   it('全エリアに対応レッスンが定義され、実在する', () => {

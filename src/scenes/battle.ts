@@ -50,12 +50,16 @@ const BOSS_MASTERY: Record<string, string> = {
   nullghost: 'へんすうを マスターした!',
   nesthydra: 'じょうけんぶんきを マスターした!',
   loopdragon: 'ループを マスターした!',
+  recursion: 'かんすうを マスターした!',
+  kraken: 'はいれつを マスターした!',
 };
 
-/** ボス撃破で解放されるエリア名(logic.resolveVictoryに渡す) */
+/** ボス撃破で解放されるエリア名(logic.resolveVictoryに渡す)。最後のボスは記載なし=クリア */
 const BOSS_UNLOCKS: Record<string, string> = {
   nullghost: 'じょうけんぶんきの森',
   nesthydra: 'ループのどうくつ',
+  loopdragon: 'かんすうの塔',
+  recursion: 'はいれつの海',
 };
 
 export class BattleScene implements Scene {
@@ -394,7 +398,7 @@ export class BattleScene implements Scene {
     }
     if (result.unlockedAreaName) {
       msgs.push({
-        text: `ひがしの「${result.unlockedAreaName}」への みちが ひらかれた! HPが ぜんかいふくした!`,
+        text: `「${result.unlockedAreaName}」への みちが ひらかれた! HPが ぜんかいふくした!`,
         se: sfx.heal,
       });
     }

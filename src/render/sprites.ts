@@ -273,6 +273,138 @@ export const ENEMY_SPRITES: Record<string, { sprite: string[]; palette: Record<s
       '................',
     ],
   },
+  // アンデフィン・ゾンビ: returnを忘れた関数のなれのはて
+  undefzombie: {
+    palette: { g: '#8aa06a', d: '#5a7040', k: '#16213e', w: '#ffffff', r: '#d43c3c', b: '#4a5a3a' },
+    sprite: [
+      '................',
+      '....gggggggg....',
+      '...gggggggggg...',
+      '...ggwkggggkg...',
+      '...ggkkggkkgg...',
+      '...gggggggggg...',
+      '...ggdkkkkdgg...',
+      '....gggggggg....',
+      '..gbbbbbbbbbbg..',
+      '.ggbbdbbbbdbbgg.',
+      '.g.bbbbbbbbbb.g.',
+      '...bbdbbbbdbb...',
+      '...dbb.bb.bbd...',
+      '...dbb.bb.bbd...',
+      '...kk...k..kk...',
+      '................',
+    ],
+  },
+  // アロー・ガーゴイル: =>を刻まれた石像
+  arrowgoyle: {
+    palette: { s: '#8a8aa8', d: '#5a5a78', k: '#16213e', w: '#ffffff', y: '#f7d51d' },
+    sprite: [
+      '..d..........d..',
+      '.dsd........dsd.',
+      '..dssssssssssd..',
+      '..ssssssssssss..',
+      '..sswksssswkss..',
+      '..sskksssskkss..',
+      '..ssssssssssss..',
+      '...sssskksss....',
+      '..ssyyssssyyss..',
+      '.sssyysssyyysss.',
+      '.dssssyyyysssd..',
+      '.ddssssssssssd..',
+      '..dsss.ss.sssd..',
+      '..dss..ss..ssd..',
+      '..kk...kk...kk..',
+      '................',
+    ],
+  },
+  // さいきのまじん リカージョン(ボス): 渦を宿す魔人
+  recursion: {
+    palette: { p: '#6a4ad4', d: '#4a2a94', k: '#16213e', w: '#ffffff', y: '#f7d51d', c: '#9c8af0' },
+    sprite: [
+      '.....pppppp.....',
+      '...pppppppppp...',
+      '..ppwkppppwkpp..',
+      '..ppkkppppkkpp..',
+      '..pppppppppppp..',
+      '...ppppkkpppp...',
+      '..ppccccccccpp..',
+      '.pppcyccccycppp.',
+      '.ppccyyccyyccpp.',
+      '.ppcccyyyycccpp.',
+      '.dppccccccccppd.',
+      '.ddpppppppppdd..',
+      '..ddpppppppdd...',
+      '...dpp.pp.pd....',
+      '...kk..kk..kk...',
+      '................',
+    ],
+  },
+  // インデックスカニ: [0]ばさみのカニ
+  indexcrab: {
+    palette: { r: '#e05c3c', d: '#a03420', k: '#16213e', w: '#ffffff' },
+    sprite: [
+      '..w..........w..',
+      '.wkw........wkw.',
+      '.ww..........ww.',
+      '..r..k....k..r..',
+      '..rr.k....k.rr..',
+      '..rrrrrrrrrrrr..',
+      '.rrrwkrrrrwkrrr.',
+      '.rrrkkrrrrkkrrr.',
+      '.rrrrrrrrrrrrrr.',
+      '.rrdrrkkkkrrdrr.',
+      '..rrrrrrrrrrrr..',
+      '...dddddddddd...',
+      '..rr.rr..rr.rr..',
+      '.rr..rr..rr..rr.',
+      '.k...k....k...k.',
+      '................',
+    ],
+  },
+  // マップクラゲ: mapで ふえるクラゲ
+  mapjelly: {
+    palette: { c: '#4cc8d4', d: '#2a8a98', k: '#16213e', w: '#ffffff', l: '#9ceef4' },
+    sprite: [
+      '.....cccccc.....',
+      '...cccccccccc...',
+      '..cclcccccclcc..',
+      '..cccccccccccc..',
+      '.ccwkccccwkccc..',
+      '.cckkcccckkccc..',
+      '.cccccccccccccc.',
+      '.ccccckkkkccccc.',
+      '..cccccccccccc..',
+      '...dcdcdcdcdc...',
+      '...c.d.c.d.c....',
+      '...d.c.d.c.d....',
+      '...c.d.c.d.c....',
+      '....d...d..d....',
+      '................',
+      '................',
+    ],
+  },
+  // はいれつクラーケン(ボス): ふかき うみの [ ] のぬし
+  kraken: {
+    palette: { b: '#3c5cd4', d: '#24389a', k: '#16213e', w: '#ffffff', y: '#f7d51d', l: '#7c9cf0' },
+    sprite: [
+      '....bbbbbbbb....',
+      '..bbbbbbbbbbbb..',
+      '.bbwkbbbbbbwkbb.',
+      '.bbkkbbbbbbkkbb.',
+      '.bbbbbbbbbbbbbb.',
+      '.bblyybbbbyylbb.',
+      '.bbbyybbbbyybbb.',
+      '..bbbbkkkkbbbb..',
+      '.dbdbdbdbdbdbdb.',
+      '.db.bd.db.bd.db.',
+      '.bd.db.bd.db.bd.',
+      '.db.bd.db.bd.db.',
+      '..b..d..b..d.b..',
+      '..d..b..d..b.d..',
+      '................',
+      '................',
+    ],
+  },
   // 無限ループドラゴン(ボス): ∞マークを胸に宿す紅蓮のドラゴン
   loopdragon: {
     palette: { r: '#d43c3c', d: '#8a1c1c', k: '#16213e', w: '#ffffff', y: '#f7d51d', o: '#f0a03c' },
@@ -296,6 +428,36 @@ export const ENEMY_SPRITES: Record<string, { sprite: string[]; palette: Record<s
     ],
   },
 };
+
+// ---- 長老(レッスンの先生) ------------------------------------------------
+
+export const ELDER_PALETTE: Record<string, string> = {
+  r: '#8a5aa0', // ローブ(紫)
+  d: '#5a3a70',
+  f: '#f0c8a0', // 肌
+  w: '#e8e8e8', // ひげ・眉
+  k: '#22223a',
+  y: '#f7d51d', // 杖飾り
+};
+
+export const ELDER: string[] = [
+  '.....rrrrrr...y.',
+  '....rrrrrrrr..y.',
+  '....rrffffrr..k.',
+  '....wffffffw..k.',
+  '....ffkffkff..k.',
+  '....wwffffww..k.',
+  '...wwwwwwwwww.k.',
+  '....wwwwwwww..k.',
+  '....rrrrrrrr..k.',
+  '...rrdrrrrdrrfk.',
+  '...rrdrrrrdrr.k.',
+  '...rrrrrrrrrr.k.',
+  '...rdrrrrrrdr.k.',
+  '...rdrrrrrrdr...',
+  '...rrrrrrrrrr...',
+  '................',
+];
 
 // ---- 宝箱 ------------------------------------------------------------------
 
@@ -438,8 +600,8 @@ export function drawTile(ctx: CanvasRenderingContext2D, ch: string, x: number, y
       break;
     }
     case 'L': {
-      // まなびの石碑: 草/洞窟の上に石板
-      ctx.fillStyle = c.grassBase;
+      // まなびの石碑: どの地形にも馴染む土台の上に石板
+      ctx.fillStyle = '#a89878';
       ctx.fillRect(x, y, TILE, TILE);
       ctx.fillStyle = c.rock;
       ctx.fillRect(x + 3, y + 2, 10, 12);
@@ -452,6 +614,17 @@ export function drawTile(ctx: CanvasRenderingContext2D, ch: string, x: number, y
       ctx.fillRect(x + 5, y + 9, 4, 1);
       ctx.fillStyle = c.rock;
       ctx.fillRect(x + 2, y + 13, 12, 2);
+      break;
+    }
+    case 's': {
+      // 砂浜(エンカウントあり)
+      ctx.fillStyle = '#e8d49c';
+      ctx.fillRect(x, y, TILE, TILE);
+      ctx.fillStyle = '#c8b078';
+      const seed = ((x / TILE) * 5 + (y / TILE) * 9) % 6;
+      ctx.fillRect(x + 2 + seed, y + 4, 2, 1);
+      ctx.fillRect(x + 10 - seed, y + 10, 2, 1);
+      ctx.fillRect(x + 6, y + 13, 3, 1);
       break;
     }
     case 'r': {
@@ -485,11 +658,11 @@ export function drawTile(ctx: CanvasRenderingContext2D, ch: string, x: number, y
 export function isWalkable(ch: string): boolean {
   return (
     ch === 'g' || ch === 'p' || ch === 'V' || ch === 'F' ||
-    ch === 'C' || ch === 'H' || ch === 'c' || ch === 'L'
+    ch === 'C' || ch === 'H' || ch === 'c' || ch === 'L' || ch === 's'
   );
 }
 
 /** エンカウント対象タイルか */
 export function isEncounterTile(ch: string): boolean {
-  return ch === 'g' || ch === 'c';
+  return ch === 'g' || ch === 'c' || ch === 's';
 }

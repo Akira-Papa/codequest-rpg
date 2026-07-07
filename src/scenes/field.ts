@@ -17,7 +17,10 @@ import {
   CHEST_CLOSED,
   CHEST_OPEN,
   CHEST_PALETTE,
+  ELDER,
+  ELDER_PALETTE,
 } from '../render/sprites';
+import { drawDemo } from '../render/demos';
 import { drawWindow, drawText, drawWrappedText, drawHpBar } from '../render/ui';
 import { pickWeighted, gainExp, expForNext, attackForLevel } from '../core/logic';
 import { sfx } from '../core/audio';
@@ -43,6 +46,16 @@ const CATEGORY_LABELS: [string, string][] = [
   ['variable', 'へんすう'],
   ['condition', 'じょうけん'],
   ['loop', 'ループ'],
+  ['function', 'かんすう'],
+  ['array', 'はいれつ'],
+];
+
+const BOSS_LIST: [string, string][] = [
+  ['nullghost', 'ヌルポインタゴースト'],
+  ['nesthydra', 'ネストヒュドラ'],
+  ['loopdragon', 'むげんループドラゴン'],
+  ['recursion', 'リカージョン'],
+  ['kraken', 'はいれつクラーケン'],
 ];
 
 export class FieldScene implements Scene {
@@ -266,7 +279,7 @@ export class FieldScene implements Scene {
       let chosen = -1;
       if (input.wasPressed('confirm')) chosen = menu.cursor;
       if (input.click) {
-        const row = Math.floor((input.click.y - 56) / 16);
+        const row = Math.floor((input.click.y - 48) / 15);
         if (row >= 0 && row < LESSONS.length) {
           if (row === menu.cursor) chosen = row;
           else {
@@ -550,10 +563,10 @@ export class FieldScene implements Scene {
   }
 
   private drawLearnList(ctx: CanvasRenderingContext2D): void {
-    drawWindow(ctx, 28, 30, VIEW_W - 56, 110);
-    drawText(ctx, '― まなびの しょ ―', 74, 38, '#4cd44c');
+    drawWindow(ctx, 28, 24, VIEW_W - 56, 130);
+    drawText(ctx, '― まなびの しょ ―', 74, 32, '#4cd44c');
     LESSONS.forEach((lesson, i) => {
-      const y = 56 + i * 16;
+      const y = 48 + i * 15;
       const unlocked = this.lessonUnlocked(lesson.id);
       const read = this.game.data.readLessons.includes(lesson.id);
       if (i === this.menu!.cursor) drawText(ctx, '▶', 36, y, '#f7d51d');
@@ -566,28 +579,35 @@ export class FieldScene implements Scene {
       );
       if (read) drawText(ctx, '☑', VIEW_W - 48, y, '#4cd44c');
     });
-    drawText(ctx, 'Enter/タップで よむ  Esc/Xで もどる', 48, 122, '#8888c0', 7);
+    drawText(ctx, 'Enter/タップで よむ  Esc/Xで もどる', 48, 140, '#8888c0', 7);
   }
 
   private drawLesson(ctx: CanvasRenderingContext2D): void {
     const lesson = this.lessonId ? lessonById(this.lessonId) : undefined;
     if (!lesson) return;
-    drawWindow(ctx, 12, 24, VIEW_W - 24, VIEW_H - 48);
-    drawText(ctx, `▼ ${lesson.title}`, 24, 32, '#f7d51d');
-    drawText(
-      ctx,
-      `${this.lessonPage + 1}/${lesson.pages.length}`,
-      VIEW_W - 52,
-      32,
-      '#8888c0'
-    );
-    drawWrappedText(ctx, lesson.pages[this.lessonPage], 24, 50, VIEW_W - 48, 12);
+    const page = lesson.pages[this.lessonPage];
+    drawWindow(ctx, 12, 18, VIEW_W - 24, VIEW_H - 34);
+
+    // 長老が教えてくれる
+    drawSprite(ctx, ELDER, ELDER_PALETTE, 18, 22, 2);
+    drawText(ctx, `ちょうろう「${lesson.title}」`, 54, 28, '#f7d51d');
+    drawText(ctx, `${this.lessonPage + 1}/${lesson.pages.length}`, VIEW_W - 52, 28, '#8888c0');
+
+    drawWrappedText(ctx, page.text, 22, 58, VIEW_W - 44, 11);
+
+    // アニメーションデモ
+    if (page.demo) {
+      ctx.fillStyle = 'rgba(255,255,255,0.05)';
+      ctx.fillRect(20, 112, VIEW_W - 40, 50);
+      drawDemo(ctx, page.demo, 22, 114, this.tick);
+    }
+
     const last = this.lessonPage === lesson.pages.length - 1;
     drawText(
       ctx,
       last ? 'Enter/タップで おわる' : 'Enter/タップで つぎへ (←で もどる)',
-      24,
-      VIEW_H - 36,
+      22,
+      VIEW_H - 26,
       '#8888c0',
       7
     );
@@ -609,15 +629,16 @@ export class FieldScene implements Scene {
     const d = this.game.data;
     drawWindow(ctx, 20, 12, VIEW_W - 40, VIEW_H - 24);
     drawText(ctx, '― ゆうしゃの つよさ ―', 62, 20, '#f7d51d');
+    if (d.cleared) drawText(ctx, '★', 208, 20, '#f7d51d');
 
-    drawText(ctx, `レベル: ${p.level}`, 32, 38);
-    drawText(ctx, `HP: ${p.hp}/${p.maxHp}`, 130, 38);
-    drawText(ctx, `こうげき: ${attackForLevel(p.level)}`, 32, 50);
-    drawText(ctx, `つぎのLvまで: あと${expForNext(p.level) - p.exp}`, 130, 50);
-    drawText(ctx, `たたかいの かち: ${d.battleWins}回`, 32, 62);
-    drawText(ctx, `さいこうコンボ: ${d.bestCombo}`, 130, 62);
+    drawText(ctx, `レベル: ${p.level}`, 32, 34);
+    drawText(ctx, `HP: ${p.hp}/${p.maxHp}`, 130, 34);
+    drawText(ctx, `こうげき: ${attackForLevel(p.level)}`, 32, 46);
+    drawText(ctx, `つぎのLvまで: あと${expForNext(p.level) - p.exp}`, 130, 46);
+    drawText(ctx, `たたかいの かち: ${d.battleWins}回`, 32, 58);
+    drawText(ctx, `さいこうコンボ: ${d.bestCombo}`, 130, 58);
 
-    drawText(ctx, '― がくしゅうの きろく ―', 58, 80, '#4cd44c');
+    drawText(ctx, '― がくしゅうの きろく ―', 58, 74, '#4cd44c');
     CATEGORY_LABELS.forEach(([cat, label], i) => {
       let asked = 0;
       let correct = 0;
@@ -629,57 +650,72 @@ export class FieldScene implements Scene {
           correct += s.correct;
         }
       }
-      const y = 94 + i * 13;
+      const y = 86 + i * 10;
       const rate = asked > 0 ? Math.round((correct / asked) * 100) : null;
-      drawText(ctx, label, 32, y);
+      drawText(ctx, label, 32, y, '#ffffff', 7);
       drawText(
         ctx,
         rate === null ? 'まだ みとうの りょういき' : `せいかいりつ ${rate}%  (${correct}/${asked})`,
-        96,
+        92,
         y,
-        rate === null ? '#55557a' : rate >= 80 ? '#4cd44c' : rate >= 50 ? '#f7d51d' : '#d43c3c'
+        rate === null ? '#55557a' : rate >= 80 ? '#4cd44c' : rate >= 50 ? '#f7d51d' : '#d43c3c',
+        7
       );
     });
 
-    drawText(ctx, '― たおした ボス ―', 70, 136, '#d43c3c');
-    const bosses: [string, string][] = [
-      ['nullghost', 'ヌルポインタゴースト'],
-      ['nesthydra', 'ネストヒュドラ'],
-      ['loopdragon', 'むげんループドラゴン'],
-    ];
-    bosses.forEach(([id, name], i) => {
+    drawText(ctx, '― たおした ボス ―', 70, 138, '#d43c3c');
+    BOSS_LIST.forEach(([id, name], i) => {
       const done = d.defeatedBosses.includes(id);
-      drawText(ctx, `${done ? '☑' : '☐'} ${name}`, 32, 147 + i * 9, done ? '#4cd44c' : '#55557a', 7);
+      const col = i < 3 ? 0 : 1;
+      const row = i < 3 ? i : i - 3;
+      drawText(
+        ctx,
+        `${done ? '☑' : '☐'} ${name}`,
+        col === 0 ? 30 : 134,
+        149 + row * 9,
+        done ? '#4cd44c' : '#55557a',
+        6
+      );
     });
-    if (d.cleared) drawText(ctx, '★クリアずみ!', 176, 20, '#f7d51d', 7);
 
-    drawText(ctx, 'キー/タップで もどる', 156, 164, '#8888c0', 7);
+    drawText(ctx, 'キー/タップで もどる', 148, 168, '#8888c0', 7);
+  }
+
+  /** 点線の道を描く */
+  private dottedPath(ctx: CanvasRenderingContext2D, x1: number, y1: number, x2: number, y2: number): void {
+    const dist = Math.hypot(x2 - x1, y2 - y1);
+    const steps = Math.floor(dist / 8);
+    ctx.fillStyle = '#c8a05c';
+    for (let i = 1; i < steps; i++) {
+      const t = i / steps;
+      ctx.fillRect(Math.round(x1 + (x2 - x1) * t), Math.round(y1 + (y2 - y1) * t), 3, 2);
+    }
   }
 
   private drawWorldMap(ctx: CanvasRenderingContext2D): void {
     const d = this.game.data;
     drawWindow(ctx, 12, 12, VIEW_W - 24, VIEW_H - 24);
-    drawText(ctx, '― せかいの ちず ―', 78, 20, '#f7d51d');
+    drawText(ctx, '― せかいの ちず ―', 78, 18, '#f7d51d');
 
     const nodes = [
-      { id: 'area1', x: 52, label: 'へんすうの村' },
-      { id: 'area2', x: 128, label: 'ぶんきの森' },
-      { id: 'area3', x: 204, label: 'ループのどうくつ' },
+      { id: 'area1', x: 48, y: 58, label: 'へんすうの村' },
+      { id: 'area2', x: 126, y: 58, label: 'ぶんきの森' },
+      { id: 'area3', x: 204, y: 58, label: 'ループのどうくつ' },
+      { id: 'area4', x: 90, y: 112, label: 'かんすうの塔' },
+      { id: 'area5', x: 178, y: 112, label: 'はいれつの海' },
     ];
-    const ny = 84;
 
-    // つなぐ道(点線)
-    ctx.fillStyle = '#c8a05c';
-    for (let x = 64; x < 200; x += 8) {
-      ctx.fillRect(x, ny + 7, 4, 2);
-    }
+    // つなぐ道(点線): 村→森→洞窟、洞窟→塔→海
+    this.dottedPath(ctx, 60, 62, 114, 62);
+    this.dottedPath(ctx, 138, 62, 192, 62);
+    this.dottedPath(ctx, 198, 70, 104, 108);
+    this.dottedPath(ctx, 104, 116, 164, 116);
 
     for (const node of nodes) {
       const area = AREAS[node.id];
-      const unlocked =
-        !area.unlockedBy || d.defeatedBosses.includes(area.unlockedBy);
+      const ny = node.y;
+      const unlocked = !area.unlockedBy || d.defeatedBosses.includes(area.unlockedBy);
 
-      // ノードのアイコン
       if (node.id === 'area1') {
         // 村: 家
         ctx.fillStyle = '#d43c3c';
@@ -695,7 +731,7 @@ export class FieldScene implements Scene {
         ctx.fillRect(node.x - 5, ny - 10, 10, 6);
         ctx.fillStyle = '#6a4a2a';
         ctx.fillRect(node.x - 2, ny + 4, 4, 5);
-      } else {
+      } else if (node.id === 'area3') {
         // 洞窟: 山
         ctx.fillStyle = '#6a6a80';
         ctx.beginPath();
@@ -706,49 +742,61 @@ export class FieldScene implements Scene {
         ctx.fill();
         ctx.fillStyle = '#22222e';
         ctx.fillRect(node.x - 3, ny + 1, 6, 7);
+      } else if (node.id === 'area4') {
+        // 塔
+        ctx.fillStyle = '#8a8aa8';
+        ctx.fillRect(node.x - 5, ny - 10, 10, 18);
+        ctx.fillRect(node.x - 7, ny - 10, 3, 4);
+        ctx.fillRect(node.x + 4, ny - 10, 3, 4);
+        ctx.fillStyle = '#4a3a70';
+        ctx.fillRect(node.x - 2, ny + 2, 4, 6);
+      } else {
+        // 海: 波
+        ctx.fillStyle = '#3c5cd4';
+        ctx.fillRect(node.x - 10, ny - 4, 20, 10);
+        ctx.fillStyle = '#7c9cf0';
+        const ph = Math.floor(this.tick / 500) % 2;
+        ctx.fillRect(node.x - 8 + ph * 2, ny - 2, 6, 1);
+        ctx.fillRect(node.x + 2 - ph * 2, ny + 2, 6, 1);
       }
 
       if (!unlocked) {
-        // 未解放: 暗く+カギ
         ctx.fillStyle = 'rgba(10, 10, 24, 0.72)';
         ctx.fillRect(node.x - 12, ny - 12, 24, 22);
         drawText(ctx, '?', node.x - 3, ny - 6, '#8888c0', 10);
       }
 
-      // エリア名
       drawText(
         ctx,
         node.label,
         node.x - node.label.length * 3.5,
-        ny + 14,
+        ny + 12,
         unlocked ? '#ffffff' : '#55557a',
         7
       );
 
-      // ボス状態
       const bossId = area.boss?.enemyId;
       if (bossId && unlocked) {
         const done = d.defeatedBosses.includes(bossId);
-        drawText(ctx, done ? '☑ボスげきは' : '!ボスがまつ', node.x - 18, ny + 24, done ? '#4cd44c' : '#d43c3c', 7);
+        drawText(ctx, done ? '☑ボスげきは' : '!ボスがまつ', node.x - 18, ny + 21, done ? '#4cd44c' : '#d43c3c', 6);
       }
 
-      // 現在地マーカー
       if (d.currentArea === node.id) {
         if (Math.floor(this.tick / 400) % 2 === 0) {
-          drawText(ctx, '▼', node.x - 4, ny - 26, '#f7d51d');
+          drawText(ctx, '▼', node.x - 4, ny - 24, '#f7d51d');
         }
-        drawText(ctx, 'いまここ', node.x - 14, ny + 33, '#f7d51d', 7);
+        drawText(ctx, 'いまここ', node.x - 14, ny + 29, '#f7d51d', 6);
       }
     }
 
     // 進行度
     const total = Object.values(AREAS).filter((a) => a.boss).length;
     const done = d.defeatedBosses.length;
-    drawText(ctx, `ぼうけんの しんこう: ボス ${done}/${total}`, 32, 138, '#c8c8e0');
+    drawText(ctx, `ボス ${done}/${total}`, 30, 152, '#c8c8e0', 7);
     const chestsTotal = Object.values(AREAS).reduce((n, a) => n + (a.chests?.length ?? 0), 0);
-    drawText(ctx, `たからばこ: ${d.openedChests.length}/${chestsTotal}`, 32, 150, '#c8c8e0');
-    drawText(ctx, `レッスン: ${d.readLessons.length}/${LESSONS.length}`, 140, 150, '#c8c8e0');
-    if (d.cleared) drawText(ctx, '★でんせつの けんじゃ★', 82, 30, '#f7d51d', 7);
+    drawText(ctx, `たからばこ ${d.openedChests.length}/${chestsTotal}`, 84, 152, '#c8c8e0', 7);
+    drawText(ctx, `レッスン ${d.readLessons.length}/${LESSONS.length}`, 160, 152, '#c8c8e0', 7);
+    if (d.cleared) drawText(ctx, '★でんせつの けんじゃ★', 82, 28, '#f7d51d', 7);
 
     drawText(ctx, 'なにかキー/タップで もどる', 76, VIEW_H - 22, '#8888c0', 7);
   }

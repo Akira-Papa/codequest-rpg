@@ -1,4 +1,4 @@
-export type Category = 'variable' | 'condition' | 'loop';
+export type Category = 'variable' | 'condition' | 'loop' | 'function' | 'array';
 
 export interface Question {
   id: string;
@@ -12,12 +12,18 @@ export interface Question {
   hint: string;
 }
 
+export interface LessonPage {
+  text: string;
+  /** ページ下部で再生するアニメーションデモのid(render/demos.ts) */
+  demo?: string;
+}
+
 export interface Lesson {
   id: string;
   title: string;
   category: Category;
   /** まなびの石碑で表示するページ(1ページ=1メッセージウィンドウ) */
-  pages: string[];
+  pages: LessonPage[];
 }
 
 export interface Enemy {

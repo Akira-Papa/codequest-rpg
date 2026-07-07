@@ -5,8 +5,8 @@ import { AREAS } from '../src/data/areas';
 import { isWalkable } from '../src/render/sprites';
 
 describe('QUESTIONS データ整合性', () => {
-  it('30問以上ある', () => {
-    expect(QUESTIONS.length).toBeGreaterThanOrEqual(30);
+  it('60問以上ある', () => {
+    expect(QUESTIONS.length).toBeGreaterThanOrEqual(60);
   });
   it('idが重複していない', () => {
     const ids = QUESTIONS.map((q) => q.id);
@@ -21,7 +21,7 @@ describe('QUESTIONS データ整合性', () => {
     }
   });
   it('各分野×難易度に問題が存在する(カリキュラムの穴がない)', () => {
-    for (const cat of ['variable', 'condition', 'loop'] as const) {
+    for (const cat of ['variable', 'condition', 'loop', 'function', 'array'] as const) {
       for (const diff of [1, 2, 3] as const) {
         const n = QUESTIONS.filter((q) => q.category === cat && q.difficulty === diff).length;
         expect(n, `${cat} 難易度${diff}`).toBeGreaterThanOrEqual(2);
