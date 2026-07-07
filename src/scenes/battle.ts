@@ -15,7 +15,8 @@ import {
 import {
   selectQuestion,
   shuffleChoices,
-  attackForLevel,
+  comboDamage,
+  comboMultiplier,
   recordAnswer,
   resolveVictory,
   resolveDefeat,
@@ -80,6 +81,14 @@ export class BattleScene implements Scene {
 
   private shakeTimer = 0;
   private flashTimer = 0;
+  private lungeTimer = 0; // 敵の攻撃モーション(不正解時)
+
+  // 連続正解コンボ
+  private combo = 0;
+  private lastDamage = 0;
+
+  // ダメージ数字のポップアップ
+  private popups: { text: string; x: number; y: number; age: number; color: string }[] = [];
 
   private bgGrad: CanvasGradient | null = null;
   private readonly whitePalette: Record<string, string>;
@@ -130,7 +139,10 @@ export class BattleScene implements Scene {
     this.tick += dt;
     if (this.shakeTimer > 0) this.shakeTimer -= dt;
     if (this.flashTimer > 0) this.flashTimer -= dt;
+    if (this.lungeTimer > 0) this.lungeTimer -= dt;
     if (this.explainLock > 0) this.explainLock -= dt;
+    for (const pop of this.popups) pop.age += dt;
+    this.popups = this.popups.filter((pop) => pop.age < 900);
 
     const input = this.game.input;
 
@@ -248,18 +260,39 @@ export class BattleScene implements Scene {
     recordAnswer(this.game.data.stats, this.pq.q.id, correct);
 
     if (correct) {
-      const dmg = attackForLevel(this.game.data.player.level);
+      this.combo += 1;
+      if (this.combo > this.game.data.bestCombo) {
+        this.game.data.bestCombo = this.combo;
+      }
+      const dmg = comboDamage(this.game.data.player.level, this.combo);
+      this.lastDamage = dmg;
       this.enemyHp = Math.max(0, this.enemyHp - dmg);
       sfx.correct();
       sfx.hit();
       this.shakeTimer = 350;
       this.flashTimer = 250;
+      this.popups.push({
+        text: `-${dmg}`,
+        x: SPRITE_X + 40 + (Math.random() - 0.5) * 20,
+        y: SPRITE_Y + 20,
+        age: 0,
+        color: this.combo >= 3 ? '#f7d51d' : '#ffffff',
+      });
       this.explainCorrect = true;
       this.explainLock = 0;
     } else {
+      this.combo = 0;
       const p = this.game.data.player;
       p.hp = Math.max(0, p.hp - this.enemy.attack);
       sfx.wrong();
+      this.lungeTimer = 400; // 敵が襲いかかるモーション
+      this.popups.push({
+        text: `-${this.enemy.attack}`,
+        x: VIEW_W - 46,
+        y: 46,
+        age: 0,
+        color: '#d43c3c',
+      });
       this.explainCorrect = false;
       this.explainLock = 1500;
     }
@@ -406,12 +439,18 @@ export class BattleScene implements Scene {
     ctx.fillStyle = 'rgba(0,0,0,0.35)';
     ctx.fillRect(0, 104, VIEW_W, VIEW_H - 104);
 
-    // 敵スプライト(シェイク・被弾フラッシュ)
+    // 敵スプライト(呼吸アニメ+シェイク+攻撃モーション)
     let ex = SPRITE_X;
-    let ey = SPRITE_Y;
+    let ey = SPRITE_Y + Math.round(Math.sin(this.tick / 280) * 2);
     if (this.shakeTimer > 0) {
       ex += Math.round((Math.random() - 0.5) * 6);
       ey += Math.round((Math.random() - 0.5) * 4);
+    }
+    if (this.lungeTimer > 0) {
+      // 0→1→0 の山なりでプレイヤー(右下のステータス窓)方向へ踏み込む
+      const t = 1 - Math.abs(this.lungeTimer / 200 - 1);
+      ex += Math.round(t * 24);
+      ey += Math.round(t * 10);
     }
     if (this.enemyHp > 0) {
       const palette =
@@ -431,12 +470,29 @@ export class BattleScene implements Scene {
       drawText(ctx, `${this.enemyHp}/${this.enemy.maxHp}`, wx + nameW - 42, 5, '#c8c8e0', 7);
     }
 
-    // プレイヤーステータス(右上)
+    // プレイヤーステータス(右上)。被弾直後は赤くフラッシュ
     const p = this.game.data.player;
     drawWindow(ctx, VIEW_W - 78, 20, 76, 40);
+    if (this.lungeTimer > 100 && this.lungeTimer < 300 && Math.floor(this.tick / 70) % 2 === 0) {
+      ctx.fillStyle = 'rgba(212, 60, 60, 0.35)';
+      ctx.fillRect(VIEW_W - 76, 22, 72, 36);
+    }
     drawText(ctx, `ゆうしゃ Lv${p.level}`, VIEW_W - 72, 25, '#f7d51d');
     drawText(ctx, `HP ${p.hp}/${p.maxHp}`, VIEW_W - 72, 36);
     drawHpBar(ctx, VIEW_W - 72, 48, 64, p.hp, p.maxHp);
+
+    // コンボ表示(2連続以上のとき)
+    if (this.combo >= 2) {
+      drawText(ctx, `${this.combo}コンボ! x${comboMultiplier(this.combo)}`, VIEW_W - 76, 64, '#f7d51d', 7);
+    }
+
+    // ダメージ数字ポップアップ(ふわっと上がって消える)
+    for (const pop of this.popups) {
+      const alpha = 1 - pop.age / 900;
+      ctx.globalAlpha = Math.max(0, alpha);
+      drawText(ctx, pop.text, pop.x, pop.y - pop.age * 0.02, pop.color, 10);
+      ctx.globalAlpha = 1;
+    }
 
     switch (this.phase) {
       case 'message':
@@ -506,13 +562,14 @@ export class BattleScene implements Scene {
     drawWindow(ctx, 4, top, VIEW_W - 8, VIEW_H - top - 4);
 
     if (this.explainCorrect) {
-      drawText(ctx, '○ せいかい!', 14, top + 8, '#4cd44c', 10);
+      const comboText = this.combo >= 2 ? ` ${this.combo}れんぞく せいかい!` : '';
+      drawText(ctx, `○ せいかい!${comboText}`, 14, top + 8, '#4cd44c', 10);
       drawText(
         ctx,
-        `${this.enemy.name}に ${attackForLevel(this.game.data.player.level)}の ダメージ!`,
+        `${this.enemy.name}に ${this.lastDamage}の ダメージ!${this.combo >= 2 ? ` (x${comboMultiplier(this.combo)})` : ''}`,
         14,
         top + 22,
-        '#ffffff'
+        this.combo >= 3 ? '#f7d51d' : '#ffffff'
       );
     } else {
       drawText(ctx, '× ざんねん!', 14, top + 8, '#d43c3c', 10);

@@ -85,6 +85,17 @@ describe('AREAS データ整合性', () => {
       }
     }
   });
+  it('宝箱は通行可能タイル上にありidが重複しない', () => {
+    const ids: string[] = [];
+    for (const a of Object.values(AREAS)) {
+      for (const c of a.chests ?? []) {
+        expect(isWalkable(a.map[c.y][c.x]), `${a.id}: ${c.id}`).toBe(true);
+        expect(c.exp).toBeGreaterThan(0);
+        ids.push(c.id);
+      }
+    }
+    expect(new Set(ids).size).toBe(ids.length);
+  });
   it('エンカウントテーブルの敵はすべて定義済み', () => {
     for (const a of Object.values(AREAS)) {
       for (const e of a.encounters) {

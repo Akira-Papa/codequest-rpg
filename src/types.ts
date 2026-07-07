@@ -33,6 +33,13 @@ export interface AreaExit {
   spawnY: number;
 }
 
+export interface Chest {
+  id: string;
+  x: number;
+  y: number;
+  exp: number; // 開けたときの経験値ボーナス(+HP全回復)
+}
+
 export interface Area {
   id: string;
   name: string;
@@ -44,6 +51,7 @@ export interface Area {
   exits: AreaExit[];
   spawn: { x: number; y: number };
   skyColor: string;           // バトル背景色
+  chests?: Chest[];           // ちしきのたからばこ
 }
 
 export interface QuestionStat {
@@ -67,6 +75,12 @@ export interface SaveData {
   defeatedBosses: string[];
   stats: Record<string, QuestionStat>;
   cleared: boolean;
+  /** 勝利した戦闘の回数 */
+  battleWins: number;
+  /** 連続正解コンボの最高記録 */
+  bestCombo: number;
+  /** 開封済みの宝箱id */
+  openedChests: string[];
 }
 
 export interface Scene {

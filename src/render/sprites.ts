@@ -297,6 +297,54 @@ export const ENEMY_SPRITES: Record<string, { sprite: string[]; palette: Record<s
   },
 };
 
+// ---- 宝箱 ------------------------------------------------------------------
+
+export const CHEST_PALETTE: Record<string, string> = {
+  b: '#8a5a2a', // 木
+  d: '#5a3a1a', // 木の影
+  y: '#f7d51d', // 金具
+  k: '#22223a',
+  g: '#4cd44c', // 中の輝き
+};
+
+export const CHEST_CLOSED: string[] = [
+  '................',
+  '................',
+  '................',
+  '...bbbbbbbbbb...',
+  '..bbbbbbbbbbbb..',
+  '..bybbbbbbbbyb..',
+  '..bbbbbyybbbbb..',
+  '..dddddyyddddd..',
+  '..dbbbbyybbbbd..',
+  '..dbbbbyybbbbd..',
+  '..dybbbbbbbbyd..',
+  '..dddddddddddd..',
+  '..kkkkkkkkkkkk..',
+  '................',
+  '................',
+  '................',
+];
+
+export const CHEST_OPEN: string[] = [
+  '................',
+  '..bbbbbbbbbbbb..',
+  '..bybbbbbbbbyb..',
+  '..bbbbbbbbbbbb..',
+  '..dddddddddddd..',
+  '..kggggggggggk..',
+  '..kkggggggggkk..',
+  '..dkkkkkkkkkkd..',
+  '..dbbbbbbbbbbd..',
+  '..dbbbbyybbbbd..',
+  '..dybbbbbbbbyd..',
+  '..dddddddddddd..',
+  '..kkkkkkkkkkkk..',
+  '................',
+  '................',
+  '................',
+];
+
 // ---- フィールドタイル(手続き描画) --------------------------------------
 
 export const TILE = 16;

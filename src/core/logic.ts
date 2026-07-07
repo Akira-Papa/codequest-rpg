@@ -15,6 +15,18 @@ export function attackForLevel(level: number): number {
   return 10 + level;
 }
 
+/** 連続正解コンボのダメージ倍率: 1回=x1, 2連続=x1.5, 3連続以上=x2 */
+export function comboMultiplier(combo: number): number {
+  if (combo >= 3) return 2;
+  if (combo === 2) return 1.5;
+  return 1;
+}
+
+/** コンボ込みのダメージ計算 */
+export function comboDamage(level: number, combo: number): number {
+  return Math.floor(attackForLevel(level) * comboMultiplier(combo));
+}
+
 /** 間違えた問題ほど出やすくする重み(間隔反復の簡易実装) */
 export function questionWeight(stat: QuestionStat | undefined): number {
   return 1 + (stat?.wrongCount ?? 0) * 2;
@@ -136,6 +148,7 @@ export function resolveVictory(
   let unlockedAreaName: string | null = null;
   let cleared = false;
 
+  data.battleWins += 1;
   if (enemy.isBoss && !data.defeatedBosses.includes(enemy.id)) {
     data.defeatedBosses.push(enemy.id);
     // ボス撃破のごほうび: HP全回復(遠征後の回復導線)

@@ -44,6 +44,18 @@ describe('save', () => {
     localStorage.setItem('codequest-save-v1', JSON.stringify({ version: 99 }));
     expect(loadSave()).toBeNull();
   });
+  it('v1.0の古いセーブ(新フィールドなし)を読み込むとデフォルトで補完される', () => {
+    const old = newSave() as unknown as Record<string, unknown>;
+    delete old.battleWins;
+    delete old.bestCombo;
+    delete old.openedChests;
+    localStorage.setItem('codequest-save-v1', JSON.stringify(old));
+    const loaded = loadSave();
+    expect(loaded).not.toBeNull();
+    expect(loaded!.battleWins).toBe(0);
+    expect(loaded!.bestCombo).toBe(0);
+    expect(loaded!.openedChests).toEqual([]);
+  });
   it('newSaveの初期値が正しい', () => {
     const d = newSave();
     expect(d.player.level).toBe(1);

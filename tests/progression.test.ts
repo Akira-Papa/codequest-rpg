@@ -1,5 +1,13 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { recordAnswer, resolveVictory, resolveDefeat, questionWeight, expForNext } from '../src/core/logic';
+import {
+  recordAnswer,
+  resolveVictory,
+  resolveDefeat,
+  questionWeight,
+  expForNext,
+  comboMultiplier,
+  comboDamage,
+} from '../src/core/logic';
 import { newSave } from '../src/core/save';
 import { ENEMIES } from '../src/data/enemies';
 import type { SaveData } from '../src/types';
@@ -73,6 +81,30 @@ describe('resolveVictory(勝利の進行処理)', () => {
     resolveVictory(data, ENEMIES.nullghost, UNLOCKS);
     resolveVictory(data, ENEMIES.nullghost, UNLOCKS);
     expect(data.defeatedBosses.filter((b) => b === 'nullghost')).toHaveLength(1);
+  });
+});
+
+describe('コンボシステム', () => {
+  it('倍率: 1回=x1, 2連続=x1.5, 3連続以上=x2', () => {
+    expect(comboMultiplier(1)).toBe(1);
+    expect(comboMultiplier(2)).toBe(1.5);
+    expect(comboMultiplier(3)).toBe(2);
+    expect(comboMultiplier(10)).toBe(2);
+  });
+  it('ダメージは倍率込みで切り捨て', () => {
+    // Lv1の攻撃力は11
+    expect(comboDamage(1, 1)).toBe(11);
+    expect(comboDamage(1, 2)).toBe(16); // 11 * 1.5 = 16.5 → 16
+    expect(comboDamage(1, 3)).toBe(22);
+  });
+});
+
+describe('battleWins(勝利数の記録)', () => {
+  it('勝利のたびに加算される', () => {
+    const data = newSave();
+    resolveVictory(data, ENEMIES.bugslime, UNLOCKS);
+    resolveVictory(data, ENEMIES.semibug, UNLOCKS);
+    expect(data.battleWins).toBe(2);
   });
 });
 

@@ -22,6 +22,9 @@ export function newSave(): SaveData {
     defeatedBosses: [],
     stats: {},
     cleared: false,
+    battleWins: 0,
+    bestCombo: 0,
+    openedChests: [],
   };
 }
 
@@ -42,6 +45,10 @@ export function loadSave(): SaveData | null {
     if (!data.stats || typeof data.stats !== 'object') data.stats = {};
     if (!Array.isArray(data.defeatedBosses)) data.defeatedBosses = [];
     if (typeof data.cleared !== 'boolean') data.cleared = false;
+    // v1.0のセーブには無いフィールドを補完(後方互換)
+    if (!num(data.battleWins)) data.battleWins = 0;
+    if (!num(data.bestCombo)) data.bestCombo = 0;
+    if (!Array.isArray(data.openedChests)) data.openedChests = [];
     // 破損・改変データによる進行不能を防ぐ: 数値を正常域にクランプ
     const area = AREAS[data.currentArea];
     p.level = Math.max(1, Math.floor(p.level));

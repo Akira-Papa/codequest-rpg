@@ -33,6 +33,7 @@ export const AREAS: Record<string, Area> = {
     boss: { enemyId: 'nullghost', x: 13, y: 5 },
     exits: [{ x: 15, y: 5, to: 'area2', spawnX: 1, spawnY: 5 }],
     spawn: { x: 3, y: 2 },
+    chests: [{ id: 'chest-a1', x: 13, y: 9, exp: 15 }],
   },
   area2: {
     id: 'area2',
@@ -64,6 +65,7 @@ export const AREAS: Record<string, Area> = {
       { x: 15, y: 5, to: 'area3', spawnX: 1, spawnY: 5 },
     ],
     spawn: { x: 1, y: 5 },
+    chests: [{ id: 'chest-a2', x: 14, y: 9, exp: 30 }],
   },
   area3: {
     id: 'area3',
@@ -92,5 +94,9 @@ export const AREAS: Record<string, Area> = {
     unlockedBy: 'nesthydra',
     exits: [{ x: 0, y: 5, to: 'area2', spawnX: 14, spawnY: 5 }],
     spawn: { x: 1, y: 5 },
+    chests: [
+      { id: 'chest-a3a', x: 13, y: 2, exp: 40 },
+      { id: 'chest-a3b', x: 8, y: 10, exp: 60 },
+    ],
   },
 };
