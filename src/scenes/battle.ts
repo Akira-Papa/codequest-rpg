@@ -22,7 +22,16 @@ import {
   resolveDefeat,
 } from '../core/logic';
 import { sfx } from '../core/audio';
+import { drawAmbient, drawVignette, drawStage, drawAurora, type AmbientTheme } from '../render/fx';
 import { FieldScene } from './field';
+
+const BATTLE_THEME: Record<string, AmbientTheme> = {
+  area1: 'grass',
+  area2: 'forest',
+  area3: 'cave',
+  area4: 'tower',
+  area5: 'sea',
+};
 
 type Phase = 'message' | 'command' | 'question' | 'explain';
 
@@ -90,6 +99,11 @@ export class BattleScene implements Scene {
   private shakeTimer = 0;
   private flashTimer = 0;
   private lungeTimer = 0; // 敵の攻撃モーション(不正解時)
+  private introTimer = 450; // 敵の登場アニメ(スケールイン)
+
+  // HPバーのダメージチップ演出(遅れて減る)
+  private enemyChip = 1;
+  private playerChip = 1;
 
   // 連続正解コンボ
   private combo = 0;
@@ -157,9 +171,15 @@ export class BattleScene implements Scene {
     if (this.shakeTimer > 0) this.shakeTimer -= dt;
     if (this.flashTimer > 0) this.flashTimer -= dt;
     if (this.lungeTimer > 0) this.lungeTimer -= dt;
+    if (this.introTimer > 0) this.introTimer -= dt;
     if (this.explainLock > 0) this.explainLock -= dt;
     for (const pop of this.popups) pop.age += dt;
     this.popups = this.popups.filter((pop) => pop.age < 900);
+
+    // HPチップ(実HPへゆっくり追従)
+    const chase = (chip: number, target: number) => chip + (target - chip) * Math.min(1, dt / 300);
+    this.enemyChip = chase(this.enemyChip, this.enemyHp / this.enemy.maxHp);
+    this.playerChip = chase(this.playerChip, this.game.data.player.hp / this.game.data.player.maxHp);
 
     const input = this.game.input;
 
@@ -478,10 +498,17 @@ export class BattleScene implements Scene {
     }
     ctx.fillStyle = this.bgGrad;
     ctx.fillRect(0, 0, VIEW_W, VIEW_H);
+    // 遠景のオーロラ
+    drawAurora(ctx, this.tick, ['rgba(255, 255, 255, 0.05)', 'rgba(140, 170, 255, 0.07)']);
     ctx.fillStyle = 'rgba(0,0,0,0.35)';
     ctx.fillRect(0, 104, VIEW_W, VIEW_H - 104);
 
-    // 敵スプライト(呼吸アニメ+シェイク+攻撃モーション)
+    // 敵の足元ステージ
+    if (this.enemyHp > 0) {
+      drawStage(ctx, VIEW_W / 2, SPRITE_Y + 16 * SPRITE_SCALE - 6, 52, 'rgba(160, 180, 255, 0.18)');
+    }
+
+    // 敵スプライト(登場スケールイン+呼吸+シェイク+攻撃モーション)
     let ex = SPRITE_X;
     let ey = SPRITE_Y + Math.round(Math.sin(this.tick / 280) * 2);
     if (this.shakeTimer > 0) {
@@ -499,16 +526,27 @@ export class BattleScene implements Scene {
         this.flashTimer > 0 && Math.floor(this.tick / 60) % 2 === 0
           ? this.whitePalette
           : this.enemy.palette;
-      drawSprite(ctx, this.enemy.sprite, palette, ex, ey, SPRITE_SCALE);
+      const introT = Math.max(0, Math.min(1, 1 - this.introTimer / 450));
+      const scale = SPRITE_SCALE * (0.4 + 0.6 * introT);
+      const cx = ex + (16 * SPRITE_SCALE) / 2;
+      const bottom = ey + 16 * SPRITE_SCALE;
+      ctx.save();
+      ctx.globalAlpha = 0.3 + 0.7 * introT;
+      drawSprite(ctx, this.enemy.sprite, palette, cx - (16 * scale) / 2, bottom - 16 * scale, scale);
+      ctx.restore();
     }
+
+    // 空気感
+    drawAmbient(ctx, BATTLE_THEME[this.game.data.currentArea] ?? 'night', this.tick);
+    drawVignette(ctx, 0.5);
 
     // 敵の名前+HPバー+HP数値
     if (this.enemyHp > 0) {
       const nameW = this.enemy.name.length * 8 + 92;
       const wx = (VIEW_W - nameW) / 2;
-      drawWindow(ctx, wx, 2, nameW, 16);
+      drawWindow(ctx, wx, 2, nameW, 16, this.enemy.isBoss);
       drawText(ctx, this.enemy.name, wx + 6, 6, this.enemy.isBoss ? '#f7d51d' : '#ffffff');
-      drawHpBar(ctx, wx + nameW - 82, 8, 36, this.enemyHp, this.enemy.maxHp);
+      drawHpBar(ctx, wx + nameW - 82, 8, 36, this.enemyHp, this.enemy.maxHp, this.enemyChip);
       drawText(ctx, `${this.enemyHp}/${this.enemy.maxHp}`, wx + nameW - 42, 5, '#c8c8e0', 7);
     }
 
@@ -521,7 +559,7 @@ export class BattleScene implements Scene {
     }
     drawText(ctx, `ゆうしゃ Lv${p.level}`, VIEW_W - 72, 25, '#f7d51d');
     drawText(ctx, `HP ${p.hp}/${p.maxHp}`, VIEW_W - 72, 36);
-    drawHpBar(ctx, VIEW_W - 72, 48, 64, p.hp, p.maxHp);
+    drawHpBar(ctx, VIEW_W - 72, 48, 64, p.hp, p.maxHp, this.playerChip);
 
     // コンボ表示(2連続以上のとき)
     if (this.combo >= 2) {

@@ -21,6 +21,15 @@ import {
   ELDER_PALETTE,
 } from '../render/sprites';
 import { drawDemo } from '../render/demos';
+import { drawAmbient, drawVignette, drawShadow, type AmbientTheme } from '../render/fx';
+
+const AREA_THEME: Record<string, AmbientTheme> = {
+  area1: 'grass',
+  area2: 'forest',
+  area3: 'cave',
+  area4: 'tower',
+  area5: 'sea',
+};
 import { drawWindow, drawText, drawWrappedText, drawHpBar } from '../render/ui';
 import { pickWeighted, gainExp, expForNext, attackForLevel } from '../core/logic';
 import { sfx } from '../core/audio';
@@ -485,11 +494,12 @@ export class FieldScene implements Scene {
       );
     }
 
-    // ボスシンボル
+    // ボスシンボル(落ち影つき)
     const boss = this.area.boss;
     if (boss && !this.game.data.defeatedBosses.includes(boss.enemyId)) {
       const e = ENEMIES[boss.enemyId];
       const bob = Math.floor(this.tick / 400) % 2;
+      drawShadow(ctx, boss.x * TILE + 8, boss.y * TILE + 15, 13);
       drawSprite(ctx, e.sprite, e.palette, boss.x * TILE, boss.y * TILE + bob, 1);
     }
 
@@ -509,7 +519,12 @@ export class FieldScene implements Scene {
     // 歩行アニメ: 上下向きは左右反転で足を入れ替え、横向きは1px弾む
     const flip = this.facing === 'left' ? walkFrame === 0 : walkFrame === 1;
     const bounce = (this.facing === 'left' || this.facing === 'right') && walkFrame === 1 ? -1 : 0;
+    drawShadow(ctx, px + 8, py + 15, 11);
     drawSprite(ctx, sprite, HERO_PALETTE, px, py + bounce, 1, flip);
+
+    // 空気感: エリア別パーティクル+ビネット
+    drawAmbient(ctx, AREA_THEME[this.area.id] ?? 'grass', this.tick);
+    drawVignette(ctx, 0.4);
 
     // HUD
     drawWindow(ctx, 2, 2, 84, 30);

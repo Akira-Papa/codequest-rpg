@@ -10,17 +10,15 @@
   <link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --bg: #0a0a18;
-      --frame: #1c1c3a;
+      --bg: #05060f;
       --accent: #f7d51d;
+      --glow-1: rgba(96, 90, 255, 0.35);
+      --glow-2: rgba(38, 208, 206, 0.22);
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body {
       height: 100%;
       background: var(--bg);
-      background-image:
-        radial-gradient(ellipse 80% 60% at 50% -10%, #17173a 0%, transparent 60%),
-        repeating-linear-gradient(0deg, transparent 0 2px, rgba(255,255,255,0.012) 2px 4px);
       color: #e8e8f0;
       font-family: "DotGothic16", monospace;
       display: flex;
@@ -30,23 +28,82 @@
       overflow: hidden;
       touch-action: manipulation;
     }
+    /* うごくオーロラ背景 */
+    body::before, body::after {
+      content: "";
+      position: fixed;
+      inset: -30%;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse 42% 30% at 24% 28%, var(--glow-1), transparent 65%),
+        radial-gradient(ellipse 38% 26% at 78% 66%, var(--glow-2), transparent 65%),
+        radial-gradient(ellipse 30% 22% at 62% 18%, rgba(232, 80, 170, 0.16), transparent 65%);
+      filter: blur(28px);
+      animation: aurora 26s ease-in-out infinite alternate;
+      z-index: 0;
+    }
+    body::after {
+      animation-duration: 34s;
+      animation-direction: alternate-reverse;
+      opacity: 0.7;
+      transform: rotate(8deg) scale(1.15);
+    }
+    @keyframes aurora {
+      0%   { transform: translate3d(-3%, -2%, 0) rotate(-2deg) scale(1); }
+      50%  { transform: translate3d(3%, 2%, 0) rotate(2deg) scale(1.06); }
+      100% { transform: translate3d(-2%, 3%, 0) rotate(-1deg) scale(1.02); }
+    }
+    /* 微細な星のノイズ */
+    .stars {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        radial-gradient(1px 1px at 12% 22%, rgba(255,255,255,0.7), transparent 100%),
+        radial-gradient(1px 1px at 34% 74%, rgba(255,255,255,0.4), transparent 100%),
+        radial-gradient(1.5px 1.5px at 58% 12%, rgba(255,255,255,0.6), transparent 100%),
+        radial-gradient(1px 1px at 71% 48%, rgba(255,255,255,0.5), transparent 100%),
+        radial-gradient(1px 1px at 88% 82%, rgba(255,255,255,0.45), transparent 100%),
+        radial-gradient(1.5px 1.5px at 44% 92%, rgba(255,255,255,0.35), transparent 100%),
+        radial-gradient(1px 1px at 92% 28%, rgba(255,255,255,0.6), transparent 100%);
+      animation: twinkle 6s ease-in-out infinite alternate;
+      z-index: 0;
+    }
+    @keyframes twinkle { from { opacity: 0.5; } to { opacity: 1; } }
+
     header {
-      letter-spacing: 0.3em;
-      font-size: 12px;
-      color: var(--accent);
-      margin-bottom: 10px;
-      text-shadow: 0 0 12px rgba(247, 213, 29, 0.4);
+      position: relative;
+      z-index: 1;
+      letter-spacing: 0.42em;
+      font-size: 13px;
+      margin-bottom: 12px;
+      background: linear-gradient(90deg, #26d0ce, var(--accent) 45%, #e850aa);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-shadow: 0 0 26px rgba(247, 213, 29, 0.28);
     }
     .frame {
       position: relative;
-      padding: 8px;
-      background: var(--frame);
-      border: 3px solid #3a3a6a;
-      border-radius: 6px;
+      z-index: 1;
+      padding: 10px;
+      border-radius: 14px;
+      background: linear-gradient(160deg, rgba(30, 32, 70, 0.85), rgba(12, 13, 32, 0.9));
+      border: 1px solid rgba(150, 160, 255, 0.35);
       box-shadow:
-        0 0 0 3px #0a0a18,
-        0 0 40px rgba(60, 60, 160, 0.35),
-        inset 0 0 20px rgba(0, 0, 0, 0.6);
+        0 0 0 1px rgba(6, 6, 18, 0.9),
+        0 24px 60px rgba(0, 0, 0, 0.6),
+        0 0 46px var(--glow-1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    }
+    /* 枠の四隅のアクセント */
+    .frame::before {
+      content: "";
+      position: absolute;
+      inset: 4px;
+      border-radius: 10px;
+      border: 1px solid rgba(247, 213, 29, 0.18);
+      pointer-events: none;
     }
     canvas {
       display: block;
@@ -54,37 +111,55 @@
       aspect-ratio: 4 / 3;
       image-rendering: pixelated;
       background: #000;
+      border-radius: 6px;
     }
-    /* CRT scanline overlay */
+    /* CRTスキャンライン(控えめ) */
     .frame::after {
       content: "";
       position: absolute;
-      inset: 8px;
+      inset: 10px;
+      border-radius: 6px;
       pointer-events: none;
       background: repeating-linear-gradient(
         0deg,
-        rgba(0, 0, 0, 0.14) 0 1px,
+        rgba(0, 0, 0, 0.10) 0 1px,
         transparent 1px 3px
       );
       mix-blend-mode: multiply;
     }
     footer {
-      margin-top: 10px;
+      position: relative;
+      z-index: 1;
+      margin-top: 14px;
       font-size: 10px;
-      color: #55557a;
-      text-align: center;
-      line-height: 1.8;
+      color: #7c81ad;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
     }
-    footer b { color: #8888b0; }
+    footer span {
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: rgba(120, 130, 255, 0.10);
+      border: 1px solid rgba(150, 160, 255, 0.22);
+      white-space: nowrap;
+    }
+    footer b { color: var(--accent); font-weight: normal; }
   </style>
 </head>
 <body>
+  <div class="stars"></div>
   <header>▼ CODE QUEST ▼</header>
   <div class="frame">
     <canvas id="game" width="768" height="576"></canvas>
   </div>
   <footer>
-    <b>操作</b>: 矢印キー/WASD 移動  Enter/Space 決定  1〜4 回答  Esc/X メニュー  (タップ操作対応)
+    <span><b>移動</b> 矢印/WASD/長押し</span>
+    <span><b>決定</b> Enter/Space</span>
+    <span><b>回答</b> 1〜4</span>
+    <span><b>ヒント</b> H</span>
+    <span><b>メニュー</b> Esc/X</span>
   </footer>
   <script type="module" src="/src/main.ts"></script>
 </body>
