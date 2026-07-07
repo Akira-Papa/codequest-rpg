@@ -25,6 +25,8 @@ export function newSave(): SaveData {
     battleWins: 0,
     bestCombo: 0,
     openedChests: [],
+    readLessons: [],
+    tutorialSeen: false,
   };
 }
 
@@ -49,6 +51,8 @@ export function loadSave(): SaveData | null {
     if (!num(data.battleWins)) data.battleWins = 0;
     if (!num(data.bestCombo)) data.bestCombo = 0;
     if (!Array.isArray(data.openedChests)) data.openedChests = [];
+    if (!Array.isArray(data.readLessons)) data.readLessons = [];
+    if (typeof data.tutorialSeen !== 'boolean') data.tutorialSeen = false;
     // 破損・改変データによる進行不能を防ぐ: 数値を正常域にクランプ
     const area = AREAS[data.currentArea];
     p.level = Math.max(1, Math.floor(p.level));

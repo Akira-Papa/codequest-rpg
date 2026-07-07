@@ -437,6 +437,23 @@ export function drawTile(ctx: CanvasRenderingContext2D, ch: string, x: number, y
       }
       break;
     }
+    case 'L': {
+      // まなびの石碑: 草/洞窟の上に石板
+      ctx.fillStyle = c.grassBase;
+      ctx.fillRect(x, y, TILE, TILE);
+      ctx.fillStyle = c.rock;
+      ctx.fillRect(x + 3, y + 2, 10, 12);
+      ctx.fillStyle = '#8a8aa0';
+      ctx.fillRect(x + 4, y + 3, 8, 10);
+      ctx.fillStyle = c.caveDark;
+      // 石板の「もじ」
+      ctx.fillRect(x + 5, y + 5, 6, 1);
+      ctx.fillRect(x + 5, y + 7, 6, 1);
+      ctx.fillRect(x + 5, y + 9, 4, 1);
+      ctx.fillStyle = c.rock;
+      ctx.fillRect(x + 2, y + 13, 12, 2);
+      break;
+    }
     case 'r': {
       // 岩(洞窟の壁)
       ctx.fillStyle = c.cave;
@@ -466,7 +483,10 @@ export function drawTile(ctx: CanvasRenderingContext2D, ch: string, x: number, y
 
 /** 通行可能か */
 export function isWalkable(ch: string): boolean {
-  return ch === 'g' || ch === 'p' || ch === 'V' || ch === 'F' || ch === 'C' || ch === 'H' || ch === 'c';
+  return (
+    ch === 'g' || ch === 'p' || ch === 'V' || ch === 'F' ||
+    ch === 'C' || ch === 'H' || ch === 'c' || ch === 'L'
+  );
 }
 
 /** エンカウント対象タイルか */

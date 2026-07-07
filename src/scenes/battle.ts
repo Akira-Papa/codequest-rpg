@@ -76,6 +76,10 @@ export class BattleScene implements Scene {
   private choicesY = 0;
   private choiceSpacing = 12;
 
+  // ヒント(使うとその一撃のダメージ半減)
+  private hintUsed = false;
+  private showHint = false;
+
   private explainCorrect = false;
   private explainLock = 0; // 不正解時の解説強制読了(ms)
 
@@ -108,6 +112,15 @@ export class BattleScene implements Scene {
       intro.push({
         text: `(すいしょうの こえ: つよてきだ! Lv${rec}いじょうで いどむのが おすすめじゃ…)`,
       });
+    }
+    // 初めての戦闘: 長老がバトルの流れをガイドする
+    if (!game.data.tutorialSeen) {
+      game.data.tutorialSeen = true;
+      intro.push(
+        { text: '(ちょうろうの こえ: おちついて。クイズに せいかいすると こうげきが あたるぞ)' },
+        { text: '(こまったら みぎうえの「ヒント」を おすのじゃ。ダメージは はんぶんに なるが かならず ちかづける)' },
+        { text: '(まちがえても だいじょうぶ。かいせつを よめば つぎは あたる。それが がくしゅうじゃ!)' }
+      );
     }
     this.queueMessages(intro, () => {
       this.phase = 'command';
@@ -179,6 +192,16 @@ export class BattleScene implements Scene {
       }
       case 'question': {
         if (!this.pq) return;
+
+        // ヒント: Hキー or ヒントボタン
+        if (input.wasPressed('hint')) {
+          this.toggleHint();
+        }
+        if (input.click && this.hintButtonAt(input.click.x, input.click.y)) {
+          this.toggleHint();
+          return;
+        }
+
         let answered = -1;
         if (input.wasPressed('1')) answered = 0;
         else if (input.wasPressed('2')) answered = 1;
@@ -245,6 +268,8 @@ export class BattleScene implements Scene {
     const shuffled = shuffleChoices(q, Math.random);
     this.pq = { q, choices: shuffled.choices, answer: shuffled.answer };
     this.cursor = 0;
+    this.hintUsed = false;
+    this.showHint = false;
 
     // レイアウト計算: 問題文の折り返し行数から選択肢の位置と行間を決める
     this.qLines = layoutLines(this.game.ctx, q.text, VIEW_W - 32).length;
@@ -264,7 +289,8 @@ export class BattleScene implements Scene {
       if (this.combo > this.game.data.bestCombo) {
         this.game.data.bestCombo = this.combo;
       }
-      const dmg = comboDamage(this.game.data.player.level, this.combo);
+      let dmg = comboDamage(this.game.data.player.level, this.combo);
+      if (this.hintUsed) dmg = Math.max(1, Math.floor(dmg / 2));
       this.lastDamage = dmg;
       this.enemyHp = Math.max(0, this.enemyHp - dmg);
       sfx.correct();
@@ -400,7 +426,19 @@ export class BattleScene implements Scene {
     );
   }
 
+  private toggleHint(): void {
+    if (!this.pq) return;
+    sfx.cursor();
+    this.showHint = !this.showHint;
+    if (this.showHint) this.hintUsed = true; // 一度でも見たら半減
+  }
+
   // ---- ヒットテスト(描画座標から導出) --------------------------------------
+
+  /** ヒントボタン(出題ウィンドウ右上)の領域 */
+  private hintButtonAt(x: number, y: number): boolean {
+    return x >= VIEW_W - 66 && x <= VIEW_W - 6 && y >= Q_TOP - 15 && y < Q_TOP - 1;
+  }
 
   /** コマンド行(0=たたかう, 1=にげる)。ヒットしなければ-1 */
   private commandRowAt(x: number, y: number): number {
@@ -538,7 +576,19 @@ export class BattleScene implements Scene {
 
   private drawQuestionWindow(ctx: CanvasRenderingContext2D): void {
     if (!this.pq) return;
-    drawText(ctx, '1-4キー/タップ', VIEW_W - 76, Q_TOP - 10, '#8888c0', 7);
+    drawText(ctx, '1-4キー/タップ', 8, Q_TOP - 10, '#8888c0', 7);
+
+    // ヒントボタン(右上)
+    drawWindow(ctx, VIEW_W - 66, Q_TOP - 15, 60, 14);
+    drawText(
+      ctx,
+      this.showHint ? 'とじる(H)' : 'ヒント(H)',
+      VIEW_W - 60,
+      Q_TOP - 11,
+      this.hintUsed ? '#f7d51d' : '#4cd44c',
+      7
+    );
+
     drawWindow(ctx, 4, Q_TOP, VIEW_W - 8, VIEW_H - Q_TOP - 4);
 
     drawWrappedText(ctx, this.pq.q.text, 14, Q_TOP + 5, VIEW_W - 32, Q_LINE_H, '#ffffff');
@@ -554,6 +604,13 @@ export class BattleScene implements Scene {
       drawText(ctx, `${i + 1}:`, 22, y, '#8888c0');
       drawText(ctx, this.pq.choices[i], 38, y, selected ? '#f7d51d' : '#ffffff');
     }
+
+    // ヒント表示(敵エリアに重ねる。ダメージ半減の説明つき)
+    if (this.showHint) {
+      drawWindow(ctx, 8, 20, VIEW_W - 96, 62);
+      drawText(ctx, '▼ヒント (このこうげきは ダメージはんぶん)', 14, 25, '#f7d51d', 7);
+      drawWrappedText(ctx, this.pq.q.hint, 14, 36, VIEW_W - 112, 10, '#ffffff', 7);
+    }
   }
 
   private drawExplainWindow(ctx: CanvasRenderingContext2D): void {
@@ -564,9 +621,13 @@ export class BattleScene implements Scene {
     if (this.explainCorrect) {
       const comboText = this.combo >= 2 ? ` ${this.combo}れんぞく せいかい!` : '';
       drawText(ctx, `○ せいかい!${comboText}`, 14, top + 8, '#4cd44c', 10);
+      const notes = [
+        this.combo >= 2 ? `x${comboMultiplier(this.combo)}` : '',
+        this.hintUsed ? 'ヒントで はんぶん' : '',
+      ].filter(Boolean);
       drawText(
         ctx,
-        `${this.enemy.name}に ${this.lastDamage}の ダメージ!${this.combo >= 2 ? ` (x${comboMultiplier(this.combo)})` : ''}`,
+        `${this.enemy.name}に ${this.lastDamage}の ダメージ!${notes.length ? ` (${notes.join('/')})` : ''}`,
         14,
         top + 22,
         this.combo >= 3 ? '#f7d51d' : '#ffffff'

@@ -21,15 +21,16 @@ import {
 import { drawWindow, drawText, drawWrappedText, drawHpBar } from '../render/ui';
 import { pickWeighted, gainExp, expForNext, attackForLevel } from '../core/logic';
 import { sfx } from '../core/audio';
+import { LESSONS, LESSON_FOR_AREA, lessonById } from '../data/lessons';
 import { BattleScene } from './battle';
 import { TitleScene } from './title';
 
 type Dir = 'up' | 'down' | 'left' | 'right';
-type MenuView = 'main' | 'status' | 'map';
+type MenuView = 'main' | 'status' | 'map' | 'learn' | 'lesson';
 
 const MOVE_MS = 160;
 
-const MENU_ITEMS = ['つよさ', 'ちず', 'タイトルへ', 'とじる'] as const;
+const MENU_ITEMS = ['つよさ', 'まなぶ', 'ちず', 'タイトルへ', 'とじる'] as const;
 // メニューウィンドウ(右上)
 const MENU_X = VIEW_W - 92;
 const MENU_Y = 20;
@@ -54,9 +55,18 @@ export class FieldScene implements Scene {
   private messageTimer = 0;
   private areaNameTimer = 2200;
   private menu: { view: MenuView; cursor: number } | null = null;
+  // レッスンビューアの状態
+  private lessonId: string | null = null;
+  private lessonPage = 0;
+  private lessonFrom: 'menu' | 'stone' = 'menu';
 
   constructor(private game: Game) {
     this.area = AREAS[this.game.data.currentArea] ?? AREAS.area1;
+    // このエリアのレッスンが未読なら石碑へ誘導する
+    const lessonId = LESSON_FOR_AREA[this.area.id];
+    if (lessonId && !this.game.data.readLessons.includes(lessonId)) {
+      this.showMessage('ひかる「まなびの石碑」で まなんでから たたかうと よいぞ!', 3600);
+    }
   }
 
   onEnter(): void {
@@ -176,9 +186,109 @@ export class FieldScene implements Scene {
     this.game.saveNow();
   }
 
+  /** 石碑またはメニューからレッスンを開く */
+  private openLesson(lessonId: string, from: 'menu' | 'stone'): void {
+    sfx.confirm();
+    this.lessonId = lessonId;
+    this.lessonPage = 0;
+    this.lessonFrom = from;
+    this.menu = { view: 'lesson', cursor: 0 };
+  }
+
+  private finishLesson(): void {
+    if (this.lessonId && !this.game.data.readLessons.includes(this.lessonId)) {
+      this.game.data.readLessons.push(this.lessonId);
+      sfx.heal();
+      this.game.saveNow();
+    }
+    if (this.lessonFrom === 'stone') {
+      this.menu = null;
+      this.showMessage('「まなんだ!」メニューの「まなぶ」から いつでも よみかえせるぞ。', 3600);
+    } else {
+      this.menu = { view: 'learn', cursor: 0 };
+    }
+    this.lessonId = null;
+  }
+
+  /** レッスンが読める状態か(エリア解放済みなら読める) */
+  private lessonUnlocked(lessonId: string): boolean {
+    const areaId = Object.entries(LESSON_FOR_AREA).find(([, l]) => l === lessonId)?.[0];
+    if (!areaId) return false;
+    const area = AREAS[areaId];
+    return !area.unlockedBy || this.game.data.defeatedBosses.includes(area.unlockedBy);
+  }
+
   private updateMenu(): void {
     const input = this.game.input;
     const menu = this.menu!;
+
+    if (menu.view === 'lesson') {
+      const lesson = this.lessonId ? lessonById(this.lessonId) : undefined;
+      if (!lesson) {
+        this.menu = { view: 'main', cursor: 0 };
+        return;
+      }
+      if (input.wasPressed('cancel')) {
+        sfx.cursor();
+        this.finishLesson();
+        return;
+      }
+      if (input.wasPressed('confirm', 'right') || input.click) {
+        sfx.cursor();
+        if (this.lessonPage < lesson.pages.length - 1) {
+          this.lessonPage += 1;
+        } else {
+          this.finishLesson();
+        }
+        return;
+      }
+      if (input.wasPressed('left') && this.lessonPage > 0) {
+        sfx.cursor();
+        this.lessonPage -= 1;
+      }
+      return;
+    }
+
+    if (menu.view === 'learn') {
+      if (input.wasPressed('cancel')) {
+        sfx.cursor();
+        menu.view = 'main';
+        return;
+      }
+      if (input.wasPressed('up')) {
+        menu.cursor = (menu.cursor + LESSONS.length - 1) % LESSONS.length;
+        sfx.cursor();
+      }
+      if (input.wasPressed('down')) {
+        menu.cursor = (menu.cursor + 1) % LESSONS.length;
+        sfx.cursor();
+      }
+      let chosen = -1;
+      if (input.wasPressed('confirm')) chosen = menu.cursor;
+      if (input.click) {
+        const row = Math.floor((input.click.y - 56) / 16);
+        if (row >= 0 && row < LESSONS.length) {
+          if (row === menu.cursor) chosen = row;
+          else {
+            menu.cursor = row;
+            sfx.cursor();
+          }
+        } else {
+          sfx.cursor();
+          menu.view = 'main';
+          return;
+        }
+      }
+      if (chosen >= 0) {
+        const lesson = LESSONS[chosen];
+        if (this.lessonUnlocked(lesson.id)) {
+          this.openLesson(lesson.id, 'menu');
+        } else {
+          sfx.wrong();
+        }
+      }
+      return;
+    }
 
     if (menu.view !== 'main') {
       // つよさ/ちず画面: なにか押せば戻る
@@ -226,6 +336,9 @@ export class FieldScene implements Scene {
       case 'つよさ':
         this.menu = { view: 'status', cursor: 0 };
         break;
+      case 'まなぶ':
+        this.menu = { view: 'learn', cursor: 0 };
+        break;
       case 'ちず':
         this.menu = { view: 'map', cursor: 0 };
         break;
@@ -243,6 +356,13 @@ export class FieldScene implements Scene {
   private onStep(): void {
     const p = this.game.data.player;
     const tile = this.tileAt(p.x, p.y);
+
+    // まなびの石碑
+    if (tile === 'L') {
+      const lessonId = LESSON_FOR_AREA[this.area.id];
+      if (lessonId) this.openLesson(lessonId, 'stone');
+      return;
+    }
 
     // 宝箱: ちしきのたからばこ
     const chest = this.chestAt(p.x, p.y);
@@ -324,6 +444,21 @@ export class FieldScene implements Scene {
       }
     }
 
+    // 未読レッスンの石碑を光らせて誘導
+    const areaLesson = LESSON_FOR_AREA[this.area.id];
+    if (areaLesson && !this.game.data.readLessons.includes(areaLesson)) {
+      for (let y = 0; y < map.length; y++) {
+        for (let x = 0; x < map[y].length; x++) {
+          if (map[y][x] !== 'L') continue;
+          if (Math.floor(this.tick / 350) % 2 === 0) {
+            drawText(ctx, '!', x * TILE + 6, y * TILE - 9, '#f7d51d', 10);
+          }
+          ctx.fillStyle = 'rgba(247, 213, 29, 0.18)';
+          ctx.fillRect(x * TILE + 1, y * TILE + 1, TILE - 2, TILE - 2);
+        }
+      }
+    }
+
     // 宝箱
     for (const chest of this.area.chests ?? []) {
       const opened = this.game.data.openedChests.includes(chest.id);
@@ -394,10 +529,68 @@ export class FieldScene implements Scene {
     if (this.menu) {
       ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
       ctx.fillRect(0, 0, VIEW_W, VIEW_H);
-      if (this.menu.view === 'main') this.drawMainMenu(ctx);
-      else if (this.menu.view === 'status') this.drawStatus(ctx);
-      else this.drawWorldMap(ctx);
+      switch (this.menu.view) {
+        case 'main':
+          this.drawMainMenu(ctx);
+          break;
+        case 'status':
+          this.drawStatus(ctx);
+          break;
+        case 'map':
+          this.drawWorldMap(ctx);
+          break;
+        case 'learn':
+          this.drawLearnList(ctx);
+          break;
+        case 'lesson':
+          this.drawLesson(ctx);
+          break;
+      }
     }
+  }
+
+  private drawLearnList(ctx: CanvasRenderingContext2D): void {
+    drawWindow(ctx, 28, 30, VIEW_W - 56, 110);
+    drawText(ctx, '― まなびの しょ ―', 74, 38, '#4cd44c');
+    LESSONS.forEach((lesson, i) => {
+      const y = 56 + i * 16;
+      const unlocked = this.lessonUnlocked(lesson.id);
+      const read = this.game.data.readLessons.includes(lesson.id);
+      if (i === this.menu!.cursor) drawText(ctx, '▶', 36, y, '#f7d51d');
+      drawText(
+        ctx,
+        unlocked ? lesson.title : '???(エリアかいほうで よめる)',
+        48,
+        y,
+        !unlocked ? '#55557a' : i === this.menu!.cursor ? '#f7d51d' : '#ffffff'
+      );
+      if (read) drawText(ctx, '☑', VIEW_W - 48, y, '#4cd44c');
+    });
+    drawText(ctx, 'Enter/タップで よむ  Esc/Xで もどる', 48, 122, '#8888c0', 7);
+  }
+
+  private drawLesson(ctx: CanvasRenderingContext2D): void {
+    const lesson = this.lessonId ? lessonById(this.lessonId) : undefined;
+    if (!lesson) return;
+    drawWindow(ctx, 12, 24, VIEW_W - 24, VIEW_H - 48);
+    drawText(ctx, `▼ ${lesson.title}`, 24, 32, '#f7d51d');
+    drawText(
+      ctx,
+      `${this.lessonPage + 1}/${lesson.pages.length}`,
+      VIEW_W - 52,
+      32,
+      '#8888c0'
+    );
+    drawWrappedText(ctx, lesson.pages[this.lessonPage], 24, 50, VIEW_W - 48, 12);
+    const last = this.lessonPage === lesson.pages.length - 1;
+    drawText(
+      ctx,
+      last ? 'Enter/タップで おわる' : 'Enter/タップで つぎへ (←で もどる)',
+      24,
+      VIEW_H - 36,
+      '#8888c0',
+      7
+    );
   }
 
   private drawMainMenu(ctx: CanvasRenderingContext2D): void {
@@ -554,7 +747,8 @@ export class FieldScene implements Scene {
     drawText(ctx, `ぼうけんの しんこう: ボス ${done}/${total}`, 32, 138, '#c8c8e0');
     const chestsTotal = Object.values(AREAS).reduce((n, a) => n + (a.chests?.length ?? 0), 0);
     drawText(ctx, `たからばこ: ${d.openedChests.length}/${chestsTotal}`, 32, 150, '#c8c8e0');
-    if (d.cleared) drawText(ctx, '★でんせつの けんじゃ★', 150, 144, '#f7d51d');
+    drawText(ctx, `レッスン: ${d.readLessons.length}/${LESSONS.length}`, 140, 150, '#c8c8e0');
+    if (d.cleared) drawText(ctx, '★でんせつの けんじゃ★', 82, 30, '#f7d51d', 7);
 
     drawText(ctx, 'なにかキー/タップで もどる', 76, VIEW_H - 22, '#8888c0', 7);
   }

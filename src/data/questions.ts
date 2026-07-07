@@ -13,6 +13,7 @@ export const QUESTIONS: Question[] = [
     text: 'let x = 5;\nこのとき x の値は?',
     choices: ['5', '"x"', 'undefined', '"5"'],
     answer: 0,
+    hint: '" " が ついていない かずは、すうじ そのもの。',
     explanation: 'let で宣言した変数 x に数値の 5 が代入される。引用符がないので文字列ではない。',
   },
   {
@@ -22,6 +23,7 @@ export const QUESTIONS: Question[] = [
     text: 'const で宣言した変数に再代入すると?',
     choices: ['エラーになる', '上書きされる', 'undefined になる', '何も起きない'],
     answer: 0,
+    hint: 'const は「さいだいにゅう きんし」の やくそく。やぶると…?',
     explanation: 'const は再代入禁止。TypeError が発生する。変えたい値には let を使う。',
   },
   {
@@ -31,6 +33,7 @@ export const QUESTIONS: Question[] = [
     text: 'let name = "勇者";\nname のデータ型は?',
     choices: ['string', 'number', 'boolean', 'object'],
     answer: 0,
+    hint: '" " で かこまれた あたいの かたを おもいだそう。',
     explanation: '引用符で囲まれた値は文字列(string)。名前に見えても型は string。',
   },
   {
@@ -40,6 +43,7 @@ export const QUESTIONS: Question[] = [
     text: '変数名として使えるのはどれ?',
     choices: ['player_hp', '1player', 'player-hp', 'let'],
     answer: 0,
+    hint: 'すうじはじまり・ハイフン・キーワードは つかえない。',
     explanation: '変数名は数字始まり・ハイフン・letなどのキーワードは不可。アンダースコアはOK。',
   },
   // ==== 変数 難易度2 ====
@@ -50,6 +54,7 @@ export const QUESTIONS: Question[] = [
     text: 'let a = 10;\nlet b = a;\na = 20;\nこのとき b は?',
     choices: ['10', '20', 'undefined', 'エラー'],
     answer: 0,
+    hint: 'b には「そのときの あたい」の コピーが はいる。',
     explanation: '数値はコピーされる。b には代入時点の 10 が入り、後から a を変えても影響しない。',
   },
   {
@@ -59,6 +64,7 @@ export const QUESTIONS: Question[] = [
     text: 'let x;\nconsole.log(x);\n出力は?',
     choices: ['undefined', 'null', '0', 'エラー'],
     answer: 0,
+    hint: 'あたいを いれるまえの はこの なかみは…?',
     explanation: '宣言だけで値を入れていない変数は undefined。null は「意図的に空」を表す別の値。',
   },
   {
@@ -68,6 +74,7 @@ export const QUESTIONS: Question[] = [
     text: 'const arr = [1, 2];\narr.push(3);\nどうなる?',
     choices: ['[1,2,3] になる', 'エラーになる', '[1,2] のまま', 'undefined になる'],
     answer: 0,
+    hint: 'const が きんしするのは「さいだいにゅう」だけ。なかみの へんこうは?',
     explanation: 'const が禁止するのは「再代入」。配列の中身の変更(push等)はできる。',
   },
   {
@@ -77,6 +84,7 @@ export const QUESTIONS: Question[] = [
     text: 'let x = "5" + 3;\nx の値は?',
     choices: ['"53"', '8', '"8"', 'エラー'],
     answer: 0,
+    hint: 'もじれつ + すうじ は「くっつく」。',
     explanation: '文字列 + 数値は文字列連結になる。"5" + 3 は "53"。足し算したいなら Number("5") + 3。',
   },
   // ==== 変数 難易度3 ====
@@ -87,6 +95,7 @@ export const QUESTIONS: Question[] = [
     text: 'let x = 5;\n{ let x = 10; }\nconsole.log(x);\n出力は?',
     choices: ['5', '10', 'undefined', 'エラー'],
     answer: 0,
+    hint: '{ } の なかで letした x は そとの x とは べつの はこ。',
     explanation: 'let はブロックスコープ。{ } の中の x は別の変数で、外の x = 5 は変わらない。',
   },
   {
@@ -101,6 +110,7 @@ export const QUESTIONS: Question[] = [
       '違いはない',
     ],
     answer: 0,
+    hint: 'let は { } の なか だけで いきる(ブロックスコープ)。',
     explanation: 'let は { } 単位のブロックスコープ、var は関数スコープ。現代のJSでは let/const を使う。',
   },
   {
@@ -110,6 +120,7 @@ export const QUESTIONS: Question[] = [
     text: 'let x = null;\ntypeof x の結果は?',
     choices: ['"object"', '"null"', '"undefined"', '"number"'],
     answer: 0,
+    hint: 'ゆうめいな れきしてきバグ。こたえは いがいな もの。',
     explanation: 'typeof null は歴史的な仕様で "object" を返す。有名な落とし穴。',
   },
   {
@@ -119,6 +130,7 @@ export const QUESTIONS: Question[] = [
     text: 'let x = 0.1 + 0.2;\nx === 0.3 の結果は?',
     choices: ['false', 'true', 'エラー', 'undefined'],
     answer: 0,
+    hint: 'コンピュータの しょうすうけいさんには ちいさな ごさが ある。',
     explanation: '浮動小数点の誤差で 0.1+0.2 は 0.30000000000000004。小数の厳密比較は要注意。',
   },
 
@@ -130,6 +142,7 @@ export const QUESTIONS: Question[] = [
     text: 'if (5 > 3) { ... }\nこのブロックは実行される?',
     choices: ['実行される', '実行されない', 'エラーになる', '5回実行される'],
     answer: 0,
+    hint: '5 > 3 は ほんとう(true)? true なら ブロックは…',
     explanation: '5 > 3 は true なので if のブロックが実行される。',
   },
   {
@@ -144,6 +157,7 @@ export const QUESTIONS: Question[] = [
       '同じ意味',
     ],
     answer: 0,
+    hint: '= が 3つの ほうが「かた」まで きびしく くらべる。',
     explanation: '=== は型変換せず型も値も比較する。比較には === を使うのが基本。',
   },
   {
@@ -153,6 +167,7 @@ export const QUESTIONS: Question[] = [
     text: 'if (0) { ... }\nこのブロックは?',
     choices: ['実行されない', '実行される', 'エラーになる', '無限ループする'],
     answer: 0,
+    hint: '0 は false あつかい(falsy)。',
     explanation: '0 は falsy(偽とみなされる値)。false, 0, "", null, undefined, NaN は falsy。',
   },
   {
@@ -167,6 +182,7 @@ export const QUESTIONS: Question[] = [
       '実行されない',
     ],
     answer: 0,
+    hint: 'else は「それいがいの みち」。ifが どうなったとき?',
     explanation: 'else は if の条件が false のときに実行される「それ以外」の分岐。',
   },
   // ==== 条件分岐 難易度2 ====
@@ -177,6 +193,7 @@ export const QUESTIONS: Question[] = [
     text: 'let x = 10;\nx > 5 && x < 20\nの結果は?',
     choices: ['true', 'false', '10', 'エラー'],
     answer: 0,
+    hint: '&& は「りょうほう true」の ときだけ true。',
     explanation: '&& は両方 true のとき true。10 > 5 も 10 < 20 も true なので結果は true。',
   },
   {
@@ -186,6 +203,7 @@ export const QUESTIONS: Question[] = [
     text: '"5" === 5 の結果は?',
     choices: ['false', 'true', '"5"', 'エラー'],
     answer: 0,
+    hint: '"5" は もじれつ、5 は すうじ。かたが ちがうと === は…',
     explanation: '=== は型もチェックする。文字列 "5" と数値 5 は型が違うので false。== なら true になる。',
   },
   {
@@ -195,6 +213,7 @@ export const QUESTIONS: Question[] = [
     text: 'let x = "";\nif (x) { ... }\nこのブロックは?',
     choices: ['実行されない', '実行される', 'エラーになる', 'xを宣言していれば実行される'],
     answer: 0,
+    hint: 'からっぽの もじれつ "" は falsy。',
     explanation: '空文字 "" は falsy。文字が1文字でもあれば truthy になる。',
   },
   {
@@ -204,6 +223,7 @@ export const QUESTIONS: Question[] = [
     text: 'let r = 10 > 5 ? "A" : "B";\nr の値は?',
     choices: ['"A"', '"B"', 'true', 'エラー'],
     answer: 0,
+    hint: '「じょうけん ? A : B」じょうけんが true なら A。',
     explanation: '三項演算子は「条件 ? 真のとき : 偽のとき」。10 > 5 は true なので "A"。',
   },
   // ==== 条件分岐 難易度3 ====
@@ -219,6 +239,7 @@ export const QUESTIONS: Question[] = [
       'xが削除される',
     ],
     answer: 0,
+    hint: '= 1つは「くらべる」ではなく「いれる」。いれたら 5 は true あつかい。',
     explanation: '= は代入。x に 5 が代入され、5 は truthy なので常に実行される。比較は === を使う。',
   },
   {
@@ -228,6 +249,7 @@ export const QUESTIONS: Question[] = [
     text: 'null == undefined の結果は?',
     choices: ['true', 'false', 'null', 'エラー'],
     answer: 0,
+    hint: '== は null と undefined を なかまあつかい する。',
     explanation: '== では null と undefined は互いに等しい。=== なら型が違うので false になる。',
   },
   {
@@ -242,6 +264,7 @@ export const QUESTIONS: Question[] = [
       '最初のcaseに戻る',
     ],
     answer: 0,
+    hint: 'break が ないと つぎの case に「ながれおちる」。',
     explanation: 'break がないと次の case に処理が流れる(フォールスルー)。バグの定番原因。',
   },
   {
@@ -251,6 +274,7 @@ export const QUESTIONS: Question[] = [
     text: '!!"hello" の結果は?',
     choices: ['true', 'false', '"hello"', 'エラー'],
     answer: 0,
+    hint: '! を 2かい かけると true/false に かわる。"hello" は なかみあり。',
     explanation: '! を2回でbooleanに変換するイディオム。空でない文字列は truthy なので true。',
   },
 
@@ -262,6 +286,7 @@ export const QUESTIONS: Question[] = [
     text: 'for (let i = 0; i < 3; i++) { ... }\n何回実行される?',
     choices: ['3回', '2回', '4回', '無限'],
     answer: 0,
+    hint: 'i = 0, 1, 2 … i < 3 が false に なるまで かぞえよう。',
     explanation: 'i = 0, 1, 2 の3回。i < 3 が false になる i = 3 で終了する。',
   },
   {
@@ -276,6 +301,7 @@ export const QUESTIONS: Question[] = [
       '終わらない',
     ],
     answer: 0,
+    hint: 'while は じょうけんが true の あいだ くりかえす。おわるのは いつ?',
     explanation: 'while は条件が true の間くり返す。false になった時点で終了する。',
   },
   {
@@ -285,6 +311,7 @@ export const QUESTIONS: Question[] = [
     text: 'for (let i = 1; i <= 5; i++)\n  console.log(i);\n最後に出力される値は?',
     choices: ['5', '4', '6', '0'],
     answer: 0,
+    hint: '<= は「その かずも ふくむ」。',
     explanation: 'i <= 5 なので i = 5 まで実行される。< と <= の違いに注意。',
   },
   {
@@ -299,6 +326,7 @@ export const QUESTIONS: Question[] = [
       'エラーを出す',
     ],
     answer: 0,
+    hint: 'break は ループからの だっしゅつ。',
     explanation: 'break はループ全体を即座に終了する。1回だけ飛ばすのは continue。',
   },
   // ==== ループ 難易度2 ====
@@ -309,6 +337,7 @@ export const QUESTIONS: Question[] = [
     text: 'let s = 0;\nfor (let i = 1; i <= 3; i++) {\n  s += i;\n}\ns の値は?',
     choices: ['6', '3', '5', '9'],
     answer: 0,
+    hint: '1 + 2 + 3 を じゅんばんに たしてみよう。',
     explanation: '1 + 2 + 3 = 6。ループ変数を合計に足し込む基本パターン。',
   },
   {
@@ -323,6 +352,7 @@ export const QUESTIONS: Question[] = [
       '前の回に戻る',
     ],
     answer: 0,
+    hint: 'continue は「そのかいだけ スキップ」。ぜんぶ やめるのは break。',
     explanation: 'continue はその回の残り処理を飛ばして次の繰り返しへ進む。break との違いに注意。',
   },
   {
@@ -332,6 +362,7 @@ export const QUESTIONS: Question[] = [
     text: 'const arr = [10, 20, 30];\nfor (const v of arr) { ... }\nv に入るのは?',
     choices: ['各要素の値', '各要素の番号', '配列全体', '配列の長さ'],
     answer: 0,
+    hint: 'for...of の of は「なかみを ひとつずつ」。',
     explanation: 'for...of は値(10, 20, 30)を順に取り出す。番号も欲しいときは ふつうの for 文か arr.entries() を使う。',
   },
   {
@@ -341,6 +372,7 @@ export const QUESTIONS: Question[] = [
     text: 'const arr = [1, 2, 3];\nfor (let i = 0; i < arr.length; i++)\nループ内で i が取る最後の値は?',
     choices: ['2', '3', '1', '4'],
     answer: 0,
+    hint: 'はいれつの ばんごうは 0 から はじまる。ながさ3なら さいごは…',
     explanation: '配列の番号は0始まり。長さ3なら番号は 0, 1, 2。最後の要素は arr[2]。',
   },
   // ==== ループ 難易度3 ====
@@ -351,6 +383,7 @@ export const QUESTIONS: Question[] = [
     text: 'while (true) { ... }\nの中に break がないと?',
     choices: ['無限ループになる', '1回で終わる', 'エラーになる', '実行されない'],
     answer: 0,
+    hint: 'じょうけんが えいえんに true だと ループは…',
     explanation: '条件が常に true なので永遠に終わらない。無限ループはブラウザを固まらせる大敵。',
   },
   {
@@ -360,6 +393,7 @@ export const QUESTIONS: Question[] = [
     text: 'for (let i = 3; i > 0; i--)\n  console.log(i);\n出力の順番は?',
     choices: ['3, 2, 1', '1, 2, 3', '3, 2, 1, 0', '2, 1, 0'],
     answer: 0,
+    hint: 'i-- は 1ずつ へっていく。3から はじまって…',
     explanation: 'i-- で減らしながら i > 0 の間くり返す。i = 0 になったら条件が false で終了。',
   },
   {
@@ -369,6 +403,7 @@ export const QUESTIONS: Question[] = [
     text: 'for (let i = 0; i <= 5; i++)\n何回実行される?',
     choices: ['6回', '5回', '4回', '7回'],
     answer: 0,
+    hint: '0, 1, 2, 3, 4, 5 と ゆびおり かぞえてみよう。',
     explanation: '0, 1, 2, 3, 4, 5 の6回。<= だと1回多い。off-by-oneエラーの典型。',
   },
   {
@@ -378,6 +413,7 @@ export const QUESTIONS: Question[] = [
     text: 'for (let i = 0; i < 3; i++)\n  for (let j = 0; j < 3; j++)\n内側の処理は合計何回?',
     choices: ['9回', '6回', '3回', '27回'],
     answer: 0,
+    hint: 'そとがわ 3かい × うちがわ 3かい で かけざん。',
     explanation: '外側3回 × 内側3回 = 9回。ネストしたループは回数がかけ算になる。',
   },
 ];

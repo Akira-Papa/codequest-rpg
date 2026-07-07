@@ -1,7 +1,10 @@
 import { initAudio } from './audio';
 import { VIEW_W, VIEW_H } from '../constants';
 
-export type VKey = 'up' | 'down' | 'left' | 'right' | 'confirm' | 'cancel' | '1' | '2' | '3' | '4';
+export type VKey =
+  | 'up' | 'down' | 'left' | 'right'
+  | 'confirm' | 'cancel' | 'hint'
+  | '1' | '2' | '3' | '4';
 
 const KEY_MAP: Record<string, VKey> = {
   ArrowUp: 'up', w: 'up', W: 'up',
@@ -10,6 +13,7 @@ const KEY_MAP: Record<string, VKey> = {
   ArrowRight: 'right', d: 'right', D: 'right',
   Enter: 'confirm', ' ': 'confirm', z: 'confirm', Z: 'confirm',
   Escape: 'cancel', x: 'cancel', X: 'cancel',
+  h: 'hint', H: 'hint',
   '1': '1', '2': '2', '3': '3', '4': '4',
 };
 

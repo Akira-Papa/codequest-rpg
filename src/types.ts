@@ -8,6 +8,16 @@ export interface Question {
   choices: string[];
   answer: number;
   explanation: string;
+  /** 答えそのものではなく考え方を示すヒント(ヒント使用時はダメージ半減) */
+  hint: string;
+}
+
+export interface Lesson {
+  id: string;
+  title: string;
+  category: Category;
+  /** まなびの石碑で表示するページ(1ページ=1メッセージウィンドウ) */
+  pages: string[];
 }
 
 export interface Enemy {
@@ -81,6 +91,10 @@ export interface SaveData {
   bestCombo: number;
   /** 開封済みの宝箱id */
   openedChests: string[];
+  /** 読んだレッスンid */
+  readLessons: string[];
+  /** 初回戦闘チュートリアルを見たか */
+  tutorialSeen: boolean;
 }
 
 export interface Scene {
